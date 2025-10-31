@@ -186,6 +186,27 @@ def patients():
         db.session.commit()
         return jsonify({"id": p.id}), 201
 
+@app.route('/appointments', method=['GET','POST'])
+@jwt_required
+def appointments():
+    if request.method=='GET':
+        appointmentdata=Appointments.query.all()
+        return jsonify([{"id":a.id,'patient_name':a.patient_name,'doctor_name':a.doctor_name,
+                        'appointment_date':a.appointment_date,'duration':a.duration,'status':a.status,
+                        'notes':a.notes,'created_at':a.created_at.isoformat()} for a in appointmentdata])
+
+    if request.method=='POST':
+        data=request.get_json()
+        a=Appointments(patient_name=data['patient_name'],
+                       doctor_name=data['doctor_name'],
+                       appointment_date=datetime.utcnow,
+                       status=data['status'],
+                       notes=data['notes'] )
+        db.session.add(a)
+        db.session.commit()
+        return jsonify({"id": a.id}), 201
+
+
 
 if __name__ == "__main__":
     with app.app_context():
